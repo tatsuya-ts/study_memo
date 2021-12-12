@@ -1,0 +1,60 @@
+#show k8s cluster-info
+kubectl cluster-info
+
+#　シングルノードk8sクラスタのノード表示
+kubectl get node
+
+# run pod 
+kubectl run hello-world --image=hello-world --restart=Never
+
+#delete pod
+kubectl delete pod hello-world
+
+#pod終了後の自動削除 --rm 
+kubectl run hello-world --image=hello-world -it --restart=Never --rm
+
+#podのバッググラウンド実行とログ表示例
+#コンテナの実行
+kubectl run hello-world --image=hello-world --restart=Never
+#　ｐodのログ表示
+kubectl logs hello-world
+
+
+#kubectlによるデプロイメントの実行
+kubectl create deployment --image hello-world hello-world
+#デプロイメントの実行状態のリスト表示
+kuberctl get all
+#podのログ出力例
+kubectl logs po/hello-world-d758f5675-47sqg
+#デプロイメント制御下でのpodの起動の失敗例
+kubectl get deploy,po
+#デプロイメント削除の実行例
+kubectl get deployment
+kubectl delete deployment hello-world
+
+#ウェブサーバNginxのデプロイメントとしての実行例 (Nginxのpodが5つできる)
+kubectl create deployment --image=nginx webserver;kubectl scale --replicas=5 deployment/webserver
+kubectl get deploy,po
+
+#podの強制停止とデプロイメントによる自己回復の様子
+kubectl delete po webserver-559b886555-9k2j7
+kubectl get deploy,po
+kubectl get deploy,po
+
+#デプロイメントの削除例
+kubectl delete deployment webserver
+
+#kubectlによるジョブ制御下でのポッドの実行
+kubectl create job hello-world --image=hello-world
+kubectl get all
+kubectl logs hello-world--1-bcv9q
+
+
+#podの終了コードによるコントローラーの振る舞いの違い
+kubectl create job job-1 --image=ubuntu -- /bin/bash -c "exit 0"
+kubectl get jobs
+kubectl create job job-2 --image=ubuntu -- /bin/bash -c "exit 1"
+kubectl get jobs
+kubectl get po
+
+
