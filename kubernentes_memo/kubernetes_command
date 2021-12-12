@@ -45,7 +45,7 @@ kubectl get deploy,po
 kubectl delete deployment webserver
 
 #kubectlによるジョブ制御下でのポッドの実行
-kubectl create job hello-world --image=hello-world
+kubectl create job hello-world --image=hello-world --restart=OnFailure
 kubectl get all
 kubectl logs hello-world--1-bcv9q
 
@@ -57,4 +57,48 @@ kubectl create job job-2 --image=ubuntu -- /bin/bash -c "exit 1"
 kubectl get jobs
 kubectl get po
 
+#step7 マニフェストとポッド
+#マニフェストからAPIオブジェクトを生成する例
+kubectl apply -f マニフェストファイル名
+kubectl apply -f nginx-pod.yml
+#########################deleteする例
+kubectl delete -f YAMLファイル名
 
+#ポッドの動作検証
+#マニフェストの適用と状態確認
+kubectl apply -f nginx-pod.yml
+kubectl get po
+
+#ｐodのIPアドレスと稼働中ノードの確認
+kubectl get po nginx -o wide
+#IPアドレスを指定してのアクセスの試み
+curl -m 3 http://172.17.0.3
+
+#対話型ポッドを起動してポッドのIPアドレスにアクセスする実行例
+kubectl run busybox --image=busybox --restart=Never --rm -it sh
+#Busyboxの同梱されているwgetコマンドでのURLのアクセステスト
+wget -q -O - http://172.17.0.4
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+#
+#
+#
+
+#
+
+#
+#
+
+#
+
+#
+##
