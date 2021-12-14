@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenCsvSample {
+public class OpenCsvWrite {
     public static void main(String[] args) throws IOException {
 
 
