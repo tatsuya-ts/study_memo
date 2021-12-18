@@ -1,5 +1,6 @@
 #! /bin/bash
 
 
-echo "`date +%Y%d%m`.txt"
+filename="work"
+touch "${filename}`date +%Y%d%m`.txt"
 
