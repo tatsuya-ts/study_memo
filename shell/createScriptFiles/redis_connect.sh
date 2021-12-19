@@ -1,56 +1,53 @@
 #! /bin/bash
 
-LOCALHOST=127.0.0.1
-#6379
-PORTS=(7001 7002 7003 7004 6379 7006) #clusterの各port
-PORTS_LEN=${#PORTS[*]}                     #6
+HOST=127.0.0.1
+PORTS=(7001 7002 7003 7004 6379 7006) #clusterの各port #6379
+PORTS_LEN=${#PORTS[*]}                #6
 CURRENT_TIME=$(date +%s)
 TIMESTAMP=''
-LOGFILE=./redis_batch.log
 
-LOG_TEMP=./tmp/temp.log
+# LOGFILE='./log/redis_batch.log'
+# ERRORLOGFILE='./log/error/redis_batch_error'
+# LOG_TEMP='./tmp/temp.log'
 
+##### func
 check_timestamp() {
     echo ${TIMESTAMP}
     if [ -z "${TIMESTAMP}" ]; then
-        echo ' timestampの値が取得できません'
-        if [ ${i} -eq 5 ]; then
-            echo "redis cluesterからtimestamp取得できませんでした。ここもエラー"
+        echo '[INFO] redis timestamp checkbatch :  timestamp値が取得できません'
+        if [ ${i} -eq $(expr "${PORTS_LEN}" - 1) ]; then
+            echo '[ERROR] redis timestamp checkbatch : redis cluesterからtimestamp取得できませんでした。ここもエラー'
         fi
         continue
     else
-        echo  port: ${PORTS[$i]} timestamp値の取得成功、timestamp:${TIMESTAMP}計算開始
-        var=$(expr ${CURRENT_TIME} - ${TIMESTAMP})
-        #10分以上経過していたらエラー出力
-        if [ ${var} -ge 600 ]; then
-            echo " エラーログ出力するように。" > redis_batch_error.log
+        echo port: ${PORTS[$i]} timestamp値の取得成功、timestamp:${TIMESTAMP}
+        ERASPED_SECONDS=$(( ${CURRENT_TIME} - ${TIMESTAMP} ))
+        echo 現在日時からの経過 : ${ERASPED_SECONDS}秒
+        #10分以上経過していた[INFO] redis timestamp checkbatch : エラー出力
+        # if [ ${ERASPED_SECONDS} -ge 600 ]; then
+        
+        if [ ${ERASPED_SECONDS} -ge 600 ]; then
+            echo '[ERROR] redis timestamp checkbatch : 10分以上経過しています'
             break
         else
-            echo " 正常終了しますログ出力する"
-            break;
+            echo '[INFO] redis timestamp checkbatch :  正常終了します'
+            break
         fi
     fi
 }
-echo "Start batch ..."
-#redis clusuterの数だけループ。 接続完了 && キューから値が取得できたらbreak, それ以外は次のループ
-echo 'Loop start...'
-# redis connect command
+##### 
 
+##### start batch
+echo '[INFO] redis timestamp checkbatch : Start batch ...'
+#redis clusuterの数だけループ。 接続完了 && キューから値が取得できたらbreak, それ以外は次のループ
+echo '[INFO] redis timestamp checkbatch : Loop start...'
 for ((i = 0; i < ${PORTS_LEN}; i++)); do
-    #死活監視
-    echo ${LOCALHOST} の port: ${PORTS[$i]} へ接続します
-    echo $(nc -vz ${LOCALHOST} ${PORTS[$i]} )
-    get_timestamp_cmd=$(redis-cli -h ${LOCALHOST} -p ${PORTS[$i]} -c LINDEX queue 0 | jq -r '.headers[0].timestamp')
-    TIMESTAMP=${get_timestamp_cmd}
-    echo b${TIMESTAMP}
+    echo ${HOST} の port: ${PORTS[$i]} へ接続します
+    echo $(nc -vz ${HOST} ${PORTS[$i]})
+    TIMESTAMP=$(redis-cli -h ${HOST} -p ${PORTS[$i]} -c LINDEX queue 0 | jq -r '.headers[0].timestamp')
     # call func
     check_timestamp
 done
-echo '...Loop end'
-echo "End batch."
-
-
-##### redisの接続確認
-#ping でports配列を回す
-#成功した場合はそのポート番号を変数に格納。
-#全部失敗した場合(変数が0の時)はエラーログとして終了する
+echo '[INFO] redis timestamp checkbatch : ...Loop end' &>ddd.log
+echo '[INFO] redis timestamp checkbatch : End batch.' &>ddd.log
+#end batch
